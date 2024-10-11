@@ -1,0 +1,65 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Temperature in London',
+      home: WeatherScreen(),
+    );
+  }
+}
+
+class WeatherScreen extends StatefulWidget {
+  @override
+  _WeatherScreenState createState() => _WeatherScreenState();
+}
+
+class _WeatherScreenState extends State<WeatherScreen> {
+  String _temperature = 'Loading...';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWeather();
+  }
+
+  Future<void> _fetchWeather() async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        _temperature = '${data['current_weather']['temperature']}°C';
+      });
+    } else {
+      setState(() {
+        _temperature = 'Error retrieving data';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Temperature in London'),
+      ),
+      body: Center(
+        child: Text(
+          _temperature,
+          style: TextStyle(fontSize: 40),
+        ),
+      ),
+    );
+  }
+}
